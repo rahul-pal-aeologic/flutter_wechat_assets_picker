@@ -134,6 +134,7 @@ class _MultiTabAssetPickerState extends State<MultiTabAssetPicker> {
   }
 
   Widget selectedAssetsListView(BuildContext context) {
+    print("popopoppopopopo");
     return Expanded(
       child: ListView.builder(
         shrinkWrap: true,
@@ -143,7 +144,7 @@ class _MultiTabAssetPickerState extends State<MultiTabAssetPicker> {
         itemCount: entities.length,
         itemBuilder: (_, int index) => Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: 8.0,
+            horizontal: 18.0,
             vertical: 16.0,
           ),
           child: AspectRatio(
@@ -400,7 +401,8 @@ class MultiTabAssetPickerBuilder extends DefaultAssetPickerBuilderDelegate {
           child: Text(
             p.isSelectedNotEmpty && !isSingleAssetMode
                 ? '${textDelegate.confirm}'
-                    ' (${p.selectedAssets.length}/${p.maxAssets})'
+                    ' (${p.selectedAssets.length})'
+                // ' (${p.selectedAssets.length}/${p.maxAssets})'
                 : textDelegate.confirm,
             style: TextStyle(
               color: p.isSelectedNotEmpty

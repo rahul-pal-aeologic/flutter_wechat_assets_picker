@@ -1506,7 +1506,7 @@ class DefaultAssetPickerBuilderDelegate
           color: theme.colorScheme.secondary,
           disabledColor: theme.splashColor,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(8),
           ),
           onPressed: shouldAllowConfirm
               ? () => Navigator.of(context).maybePop(p.selectedAssets)
@@ -1515,7 +1515,8 @@ class DefaultAssetPickerBuilderDelegate
           child: ScaleText(
             isSelectedNotEmpty && !isSingleAssetMode
                 ? '${textDelegate.confirm}'
-                    ' (${p.selectedAssets.length}/${p.maxAssets})'
+                    ' (${p.selectedAssets.length})'
+                // ' (${p.selectedAssets.length}/${p.maxAssets})'
                 : textDelegate.confirm,
             style: TextStyle(
               color: shouldAllowConfirm
@@ -1526,7 +1527,8 @@ class DefaultAssetPickerBuilderDelegate
             ),
             semanticsLabel: isSelectedNotEmpty && !isSingleAssetMode
                 ? '${semanticsTextDelegate.confirm}'
-                    ' (${p.selectedAssets.length}/${p.maxAssets})'
+                    ' (${p.selectedAssets.length})'
+                // ' (${p.selectedAssets.length}/${p.maxAssets})'
                 : semanticsTextDelegate.confirm,
           ),
         );
@@ -1922,6 +1924,106 @@ class DefaultAssetPickerBuilderDelegate
     );
   }
 
+  //mycustomiamge viewer
+  Widget previewImages(BuildContext context) {
+    final tempList = [];
+    return Consumer<DefaultAssetPickerProvider>(
+      builder: (_, DefaultAssetPickerProvider p, Widget? child) {
+        return ValueListenableBuilder<bool>(
+          valueListenable: isSwitchingPath,
+          builder: (_, bool isSwitchingPath, __) => Semantics(
+            enabled: p.isSelectedNotEmpty,
+            focusable: !isSwitchingPath,
+            hidden: isSwitchingPath,
+            onTapHint: semanticsTextDelegate.sActionPreviewHint,
+            child: child,
+          ),
+        );
+      },
+      child: Consumer<DefaultAssetPickerProvider>(
+        builder: (context, DefaultAssetPickerProvider p, __) => GestureDetector(
+          // onTap: p.isSelectedNotEmpty
+          //     ? () => viewAsset(context, 0, p.selectedAssets.first)
+          //     : null,
+          child: Selector<DefaultAssetPickerProvider, String>(
+            selector: (_, DefaultAssetPickerProvider p) =>
+                p.selectedDescriptions,
+            builder: (BuildContext c, __, ___) => Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: 50,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: p.selectedAssets.length,
+                  itemBuilder: (context, index) {
+                    print(p.selectedAssets.first);
+                    p.selectedAssets[index].file
+                        .then((value) => tempList.add(value));
+                    return FutureBuilder<dynamic>(
+                      future: p.selectedAssets[index].file,
+                      builder: (context, result) {
+                        return Container(
+                          padding: const EdgeInsets.only(right: 012),
+                          height: 48,
+                          width: 60,
+                          child: (result.data != null)
+                              ? InkWell(
+                                  onTap: () {
+                                    print("$index is tapped");
+                                    p.unSelectAsset(p.selectedAssets[index]);
+                                  },
+                                  child: Stack(
+                                    children: [
+                                      Image.file(
+                                        result.data,
+                                        height: 48,
+                                        width: 48,
+                                        fit: BoxFit.cover,
+                                      ),
+                                      Positioned(
+                                        child: Container(
+                                          padding: const EdgeInsets.all(2),
+                                          color: const Color(0xff040641)
+                                              .withOpacity(0.4),
+                                          child: const Icon(
+                                            Icons.close,
+                                            size: 10,
+                                          ),
+                                        ),
+                                        right: 0,
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : const SizedBox(),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+
+              /* ScaleText(
+                '${textDelegate.preview}'
+                '${p.isSelectedNotEmpty ? ' (${p.selectedAssets.length})' : ''}',
+                style: TextStyle(
+                  color: p.isSelectedNotEmpty
+                      ? null
+                      : c.textTheme.bodySmall?.color,
+                  fontSize: 17,
+                ),
+                maxScaleFactor: 1.2,
+                semanticsLabel: '${semanticsTextDelegate.preview}'
+                    '${p.isSelectedNotEmpty ? ' (${p.selectedAssets.length})' : ''}',
+              ),*/
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget previewButton(BuildContext context) {
     return Consumer<DefaultAssetPickerProvider>(
@@ -2145,18 +2247,32 @@ class DefaultAssetPickerBuilderDelegate
   @override
   Widget bottomActionBar(BuildContext context) {
     Widget child = Container(
-      height: bottomActionBarHeight + context.bottomPadding,
-      padding: const EdgeInsets.symmetric(horizontal: 20).copyWith(
+      height: bottomActionBarHeight +
+          context.bottomPadding +
+          (provider.selectedAssets.isNotEmpty ? 90 : 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8).copyWith(
         bottom: context.bottomPadding,
       ),
       color: theme.bottomAppBarTheme.color?.withOpacity(
         theme.bottomAppBarTheme.color!.opacity * (isAppleOS(context) ? .9 : 1),
       ),
-      child: Row(
-        children: <Widget>[
-          if (isPreviewEnabled) previewButton(context),
-          if (isPreviewEnabled || !isSingleAssetMode) const Spacer(),
-          if (isPreviewEnabled || !isSingleAssetMode) confirmButton(context),
+      child: Column(
+        children: [
+          if (provider.selectedAssets.isNotEmpty) previewImages(context),
+          if (provider.selectedAssets.isNotEmpty) const Divider(),
+          Row(
+            children: <Widget>[
+              // if (isPreviewEnabled) previewButton(context),
+              // if (isPreviewEnabled) previewImages(context),
+              // if (isPreviewEnabled || !isSingleAssetMode)
+              Text('Upload up to ${provider.maxAssets} photos'),
+              // if (isPreviewEnabled || !isSingleAssetMode)
+              const Spacer(),
+              // if (isPreviewEnabled || !isSingleAssetMode)
+              confirmButton(context),
+              // confirmButton(context)
+            ],
+          ),
         ],
       ),
     );

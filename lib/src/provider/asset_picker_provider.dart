@@ -209,6 +209,14 @@ abstract class AssetPickerProvider<Asset, Path> extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// remove a selected image
+  // set removeAtIndex(
+  //   int index,
+  // ) {
+  //   _selectedAssets.removeAt(index);
+  //   notifyListeners();
+  // }
+
   /// Descriptions for selected assets currently.
   /// 当前已被选中的资源的描述
   ///
@@ -317,6 +325,13 @@ class DefaultAssetPickerProvider
     }
     notifyListeners();
   }
+
+  /// remove a selected image ppp
+  // @override
+  // set removeAtIndex(int index) {
+  //   _selectedAssets.removeAt(index);
+  //   notifyListeners();
+  // }
 
   @override
   Future<void> getPaths() async {

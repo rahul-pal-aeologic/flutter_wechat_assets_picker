@@ -171,7 +171,7 @@ class EnglishAssetPickerTextDelegate extends AssetPickerTextDelegate {
   String get languageCode => 'en';
 
   @override
-  String get confirm => 'Confirm';
+  String get confirm => 'OK';
 
   @override
   String get cancel => 'Cancel';
@@ -1127,4 +1127,3 @@ class KoreanAssetPickerTextDelegate extends AssetPickerTextDelegate {
   @override
   String get sUnitAssetCountLabel => '개';
 }
-
