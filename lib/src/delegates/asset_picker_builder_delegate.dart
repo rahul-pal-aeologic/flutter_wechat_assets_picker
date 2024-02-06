@@ -7,6 +7,7 @@ import 'dart:math' as math;
 import 'dart:typed_data' as typed_data;
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
@@ -1501,39 +1502,42 @@ class DefaultAssetPickerBuilderDelegate
         final bool isSelectedNotEmpty = p.isSelectedNotEmpty;
         final bool shouldAllowConfirm =
             isSelectedNotEmpty || p.previousSelectedAssets.isNotEmpty;
-        return MaterialButton(
-          minWidth: shouldAllowConfirm ? 48 : 20,
-          height: appBarItemHeight,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          color: theme.colorScheme.secondary,
-          disabledColor: theme.splashColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          onPressed: shouldAllowConfirm
-              ? () => Navigator.of(context).maybePop(p.selectedAssets)
-              : null,
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          child: ScaleText(
-            isSelectedNotEmpty && !isSingleAssetMode
-                ? '${textDelegate.confirm}'
-                    ' (${p.selectedAssets.length})'
-                // ' (${p.selectedAssets.length}/${p.maxAssets})'
-                : textDelegate.confirm,
-            style: TextStyle(
-              color: shouldAllowConfirm
-                  ? theme.textTheme.bodyLarge?.color
-                  : theme.textTheme.bodySmall?.color,
-              fontSize: 17,
-              fontWeight: FontWeight.normal,
-            ),
-            semanticsLabel: isSelectedNotEmpty && !isSingleAssetMode
-                ? '${semanticsTextDelegate.confirm}'
-                    ' (${p.selectedAssets.length})'
-                // ' (${p.selectedAssets.length}/${p.maxAssets})'
-                : semanticsTextDelegate.confirm,
-          ),
-        );
+        return isSelectedNotEmpty
+            ? MaterialButton(
+                minWidth: shouldAllowConfirm ? 82 : 20,
+                // minWidth: shouldAllowConfirm ? 48 : 20,
+                height: appBarItemHeight,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                color: theme.colorScheme.secondary,
+                disabledColor: theme.splashColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                onPressed: shouldAllowConfirm
+                    ? () => Navigator.of(context).maybePop(p.selectedAssets)
+                    : null,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                child: ScaleText(
+                  isSelectedNotEmpty && !isSingleAssetMode
+                      ? '${textDelegate.confirm}'
+                          ' (${p.selectedAssets.length})'
+                      // ' (${p.selectedAssets.length}/${p.maxAssets})'
+                      : textDelegate.confirm,
+                  style: TextStyle(
+                    color: shouldAllowConfirm
+                        ? theme.textTheme.bodyLarge?.color
+                        : theme.textTheme.bodySmall?.color,
+                    fontSize: 17,
+                    fontWeight: FontWeight.normal,
+                  ),
+                  semanticsLabel: isSelectedNotEmpty && !isSingleAssetMode
+                      ? '${semanticsTextDelegate.confirm}'
+                          ' (${p.selectedAssets.length})'
+                      // ' (${p.selectedAssets.length}/${p.maxAssets})'
+                      : semanticsTextDelegate.confirm,
+                ),
+              )
+            : SizedBox.shrink();
       },
     );
   }
@@ -1936,6 +1940,19 @@ class DefaultAssetPickerBuilderDelegate
     );
   }
 
+  final ScrollController _previewImagesController = ScrollController();
+
+  animateTo() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Scroll to the last index
+      _previewImagesController.animateTo(
+        _previewImagesController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
   //mycustomiamge viewer
   Widget previewImages(BuildContext context) {
     final tempList = [];
@@ -1960,22 +1977,24 @@ class DefaultAssetPickerBuilderDelegate
           child: Selector<DefaultAssetPickerProvider, String>(
             selector: (_, DefaultAssetPickerProvider p) =>
                 p.selectedDescriptions,
-            builder: (BuildContext c, __, ___) => Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: 50,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: p.selectedAssets.length,
-                  itemBuilder: (context, index) {
-                    print(p.selectedAssets.first);
-                    p.selectedAssets[index].file
-                        .then((value) => tempList.add(value));
-                    return FutureBuilder<dynamic>(
-                      future: p.selectedAssets[index].file,
-                      builder: (context, result) {
-                        return Container(
+            builder: (BuildContext c, __, ___) => Container(
+              width: MediaQuery.of(context).size.width,
+              height: 50,
+              child: ListView.builder(
+                controller: _previewImagesController,
+                scrollDirection: Axis.horizontal,
+                itemCount: p.selectedAssets.length,
+                itemBuilder: (context, index) {
+                  print(p.selectedAssets.first);
+                  p.selectedAssets[index].file
+                      .then((value) => tempList.add(value));
+                  animateTo();
+                  return FutureBuilder<dynamic>(
+                    future: p.selectedAssets[index].file,
+                    builder: (context, result) {
+                      return Padding(
+                        padding: EdgeInsets.only(left: index == 0 ? 16.0 : 0),
+                        child: Container(
                           padding: const EdgeInsets.only(right: 012),
                           height: 48,
                           width: 60,
@@ -2009,26 +2028,12 @@ class DefaultAssetPickerBuilderDelegate
                                   ),
                                 )
                               : const SizedBox(),
-                        );
-                      },
-                    );
-                  },
-                ),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
-
-              /* ScaleText(
-                '${textDelegate.preview}'
-                '${p.isSelectedNotEmpty ? ' (${p.selectedAssets.length})' : ''}',
-                style: TextStyle(
-                  color: p.isSelectedNotEmpty
-                      ? null
-                      : c.textTheme.bodySmall?.color,
-                  fontSize: 17,
-                ),
-                maxScaleFactor: 1.2,
-                semanticsLabel: '${semanticsTextDelegate.preview}'
-                    '${p.isSelectedNotEmpty ? ' (${p.selectedAssets.length})' : ''}',
-              ),*/
             ),
           ),
         ),
@@ -2200,7 +2205,7 @@ class DefaultAssetPickerBuilderDelegate
                           alignment: AlignmentDirectional.topStart,
                           fit: BoxFit.cover,
                           child: Text(
-                            '',
+                            ' ',
                             // '${index + 1}',
                             style: TextStyle(
                               color: theme.textTheme.bodyLarge?.color
@@ -2279,28 +2284,51 @@ class DefaultAssetPickerBuilderDelegate
       height: bottomActionBarHeight +
           context.bottomPadding +
           (provider.selectedAssets.isNotEmpty ? 90 : 10),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8).copyWith(
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8).copyWith(
         bottom: context.bottomPadding,
       ),
-      color: theme.bottomAppBarTheme.color?.withOpacity(
-        theme.bottomAppBarTheme.color!.opacity * (isAppleOS(context) ? .9 : 1),
-      ),
+      color: PlatformDispatcher.instance.platformBrightness.isDark
+          ? Color(0xff171730)
+          : Colors.white
+
+      // theme.bottomAppBarTheme.color?.withOpacity(
+      //   theme.bottomAppBarTheme.color!.opacity * (isAppleOS(context) ? .9 : 1),
+      ,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           if (provider.selectedAssets.isNotEmpty) previewImages(context),
-          if (provider.selectedAssets.isNotEmpty) const Divider(),
-          Row(
-            children: <Widget>[
-              // if (isPreviewEnabled) previewButton(context),
-              // if (isPreviewEnabled) previewImages(context),
-              // if (isPreviewEnabled || !isSingleAssetMode)
-              Text('Upload up to ${provider.maxAssets} photos'),
-              // if (isPreviewEnabled || !isSingleAssetMode)
-              const Spacer(),
-              // if (isPreviewEnabled || !isSingleAssetMode)
-              confirmButton(context),
-              // confirmButton(context)
-            ],
+          if (provider.selectedAssets.isNotEmpty)
+            Divider(
+              color: PlatformDispatcher.instance.platformBrightness.isDark
+                  ? Colors.white.withOpacity(0.2)
+                  : Color(0xff040641).withOpacity(0.4),
+            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: <Widget>[
+                // if (isPreviewEnabled) previewButton(context),
+                // if (isPreviewEnabled) previewImages(context),
+                // if (isPreviewEnabled || !isSingleAssetMode)
+                Text(
+                  'Upload up to ${provider.maxAssets} photos',
+                  style: TextStyle(
+                      color:
+                          // MediaQuery.of(context).platformBrightness.isDark
+                          PlatformDispatcher.instance.platformBrightness.isDark
+                              ? Colors.white.withOpacity(0.2)
+                              : Color(0xff040641).withOpacity(0.4),
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
+                ),
+                // if (isPreviewEnabled || !isSingleAssetMode)
+                const Spacer(),
+                // if (isPreviewEnabled || !isSingleAssetMode)
+                confirmButton(context),
+                // confirmButton(context)
+              ],
+            ),
           ),
         ],
       ),
