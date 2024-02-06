@@ -303,7 +303,8 @@ abstract class AssetPickerBuilderDelegate<Asset, Path> {
 
   /// Indicator for assets selected status.
   /// 资源是否已选的指示器
-  Widget selectIndicator(BuildContext context, int index, Asset asset);
+  Widget selectIndicator(
+      BuildContext context, int index, Asset asset, int currentIndex);
 
   /// The main grid view builder for assets.
   /// 主要的资源查看网格部件
@@ -1293,7 +1294,8 @@ class DefaultAssetPickerBuilderDelegate
         builder,
         selectedBackdrop(context, currentIndex, asset),
         if (!isWeChatMoment || asset.type != AssetType.video)
-          selectIndicator(context, index, asset),
+          selectIndicator(
+              context, index, asset, p.selectedAssets.indexOf(asset) + 1),
         itemBannedIndicator(context, asset),
       ],
     );
@@ -1912,7 +1914,17 @@ class DefaultAssetPickerBuilderDelegate
                     if (isSelected)
                       AspectRatio(
                         aspectRatio: 1,
-                        child: Icon(Icons.check, color: themeColor, size: 26),
+
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: themeColor,
+                          ),
+                          child: Text('$semanticsCount'),
+                          width: 26,
+                          height: 26,
+                        ),
+                        // child: Icon(Icons.check, color: themeColor, size: 26),
                       ),
                   ],
                 ),
@@ -2089,7 +2101,8 @@ class DefaultAssetPickerBuilderDelegate
   }
 
   @override
-  Widget selectIndicator(BuildContext context, int index, AssetEntity asset) {
+  Widget selectIndicator(
+      BuildContext context, int index, AssetEntity asset, int currentIndex) {
     final double indicatorSize =
         MediaQuery.sizeOf(context).width / gridCount / 3;
     final Duration duration = switchingPathDuration * 0.75;
@@ -2116,8 +2129,23 @@ class DefaultAssetPickerBuilderDelegate
             child: AnimatedSwitcher(
               duration: duration,
               reverseDuration: duration,
-              child:
-                  selected ? const Icon(Icons.check) : const SizedBox.shrink(),
+              child: selected
+                  ?
+                  // const Icon(Icons.check)
+                  Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: themeColor,
+                      ),
+                      child: Center(
+                          child: Text(
+                        '${currentIndex}',
+                        style: TextStyle(fontSize: 22),
+                      )),
+                      width: 26,
+                      height: 26,
+                    )
+                  : const SizedBox.shrink(),
             ),
           ),
         );
@@ -2172,7 +2200,8 @@ class DefaultAssetPickerBuilderDelegate
                           alignment: AlignmentDirectional.topStart,
                           fit: BoxFit.cover,
                           child: Text(
-                            '${index + 1}',
+                            '',
+                            // '${index + 1}',
                             style: TextStyle(
                               color: theme.textTheme.bodyLarge?.color
                                   ?.withOpacity(.75),

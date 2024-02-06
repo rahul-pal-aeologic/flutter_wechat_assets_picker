@@ -694,7 +694,8 @@ class InstaAssetPickerBuilder extends DefaultAssetPickerBuilderDelegate {
 
   /// To show selected assets indicator and preview asset overlay
   @override
-  Widget selectIndicator(BuildContext context, int index, AssetEntity asset) {
+  Widget selectIndicator(
+      BuildContext context, int index, AssetEntity asset, int currentIndex) {
     final List<AssetEntity> selectedAssets = provider.selectedAssets;
     final Duration duration = switchingPathDuration * 0.75;
 

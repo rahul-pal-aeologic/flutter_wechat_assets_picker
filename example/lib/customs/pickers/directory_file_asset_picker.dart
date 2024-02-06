@@ -716,7 +716,7 @@ class FileAssetPickerBuilder
       fit: StackFit.expand,
       children: <Widget>[
         Positioned.fill(child: builder),
-        selectIndicator(context, index, asset),
+        selectIndicator(context, index, asset, currentIndex),
       ],
     );
   }
@@ -1058,7 +1058,7 @@ class FileAssetPickerBuilder
   }
 
   @override
-  Widget selectIndicator(BuildContext context, int index, File asset) {
+  Widget selectIndicator(BuildContext context, int index, File asset, int currentIndex) {
     return Selector<FileAssetPickerProvider, List<File>>(
       selector: (_, FileAssetPickerProvider p) => p.selectedAssets,
       builder: (_, List<File> selectedAssets, __) {

@@ -134,7 +134,7 @@ class _MultiTabAssetPickerState extends State<MultiTabAssetPicker> {
   }
 
   Widget selectedAssetsListView(BuildContext context) {
-    print("popopoppopopopo");
+    // print("popopoppopopopo");
     return Expanded(
       child: ListView.builder(
         shrinkWrap: true,
